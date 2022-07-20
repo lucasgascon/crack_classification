@@ -1,6 +1,6 @@
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
-
+from torch.utils.data import DataLoader
 
 data_transform = transforms.Compose([
     transforms.ToTensor(),
@@ -9,10 +9,6 @@ data_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.RandomVerticalFlip(p=0.5)
 ])
-
-
-root = 'data/images'
-model_dataset = ImageFolder(root, transform = data_transform)
 
 
 

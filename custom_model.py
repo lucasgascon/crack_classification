@@ -4,6 +4,7 @@ from torch import nn
 
 class CustomModel(nn.Module):
     def __init__(self):
+        super().__init__()
         self.backbone = timm.create_model(
             'resnet50',
             pretrained=True)
