@@ -17,8 +17,6 @@ from torch.utils.data import random_split
 
 from torchvision import transforms
 
-import matplotlib.pyplot as plt
-
 import numpy as np
 
 import os
@@ -31,7 +29,7 @@ BATCH_SIZE = 32
 NB_EPOCHS = 10
 NUM_WORKER = 0
 
-# this ensures that the current MacOS version is at least 12.3+
+"""# this ensures that the current MacOS version is at least 12.3+
 print(torch.backends.mps.is_available())
 # this ensures that the current current PyTorch installation was built with MPS activated.
 print(torch.backends.mps.is_built())
@@ -39,10 +37,12 @@ if(torch.backends.mps.is_available() & torch.backends.mps.is_built()):
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
-print('device : ', device)
+print('device : ', device)"""
+
+device = torch.device("cpu")
 #%%
 
-writer_dir = "./logs"
+writer_dir = "./logs/"
 
 tensorboard_writer = SummaryWriter(writer_dir)
 
@@ -65,11 +65,11 @@ image_transforms = {
 
 }
 
-TRAIN_DATA_FOLDER = "data/images_split/train"
-VALID_DATA_FOLDER = "data/images_split/val"
+TRAIN_DATA_FOLDER = "data/images/train"
+VALID_DATA_FOLDER = "data/images/val"
 
 date = datetime.datetime.now()
-tmp_name = 'models/leo_explo_' + datetime.datetime.strftime(date, '%H:%M:%S')
+tmp_name = 'saved_models/leo_explo_' + datetime.datetime.strftime(date, '%H:%M:%S')
 
 
 train_dataset = ImageFolder(
@@ -97,14 +97,14 @@ train_dataloader = DataLoader(
     train_dataset, 
     batch_size=BATCH_SIZE, 
     sampler = sampler, 
-    num_workers=NUM_WORKER
+    num_workers=NUM_WORKER,
 )
 
 valid_dataloader = DataLoader(
     valid_dataset, 
     batch_size=BATCH_SIZE, 
-    sampler = sampler, 
-    num_workers=NUM_WORKER
+    #sampler = sampler, 
+    num_workers=NUM_WORKER,
 )
 
 
@@ -153,8 +153,12 @@ for epoch in range(NB_EPOCHS):
 
         stop = time.time()
        
-    torch.save(model.state_dict(), tmp_name)
+    
+    #torch.save(model.state_dict(), tmp_name)
+    torch.save(model.state_dict(), 'saved_models/model.pt')
+
     model.eval()
+
     for i, (input, target) in enumerate(tqdm(valid_dataloader)):
 
         if input is None:
