@@ -67,7 +67,7 @@ TRAIN_DATA_FOLDER = "data/images_split/train"
 VALID_DATA_FOLDER = "data/images_split/val"
 
 date = datetime.datetime.now()
-tmp_name = 'leo_explo_' + datetime.datetime.strftime(date, '%H%M')
+tmp_name = 'models/leo_explo_' + datetime.datetime.strftime(date, '%H:%M:%S')
 
 
 train_dataset = ImageFolder(
@@ -113,7 +113,7 @@ optimizer = torch.optim.Adam(model.parameters())
 
 # %%
 
-pos_weight = torch.Tensor([class_weights[0] / class_weights[1]])
+pos_weight = torch.Tensor([class_weights[0] / class_weights[1]]).to(device)
 criterion = BCEWithLogitsLoss( 
     reduction='none',
     pos_weight=pos_weight,
