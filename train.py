@@ -17,6 +17,8 @@ from torch.utils.data import random_split
 
 from torchvision import transforms
 
+import matplotlib.pyplot as plt
+
 import numpy as np
 
 import os
@@ -117,7 +119,7 @@ pos_weight = torch.Tensor([class_weights[0] / class_weights[1]]).to(device)
 criterion = BCEWithLogitsLoss( 
     reduction='none',
     pos_weight=pos_weight,
-    )
+)
 
 # %%
 
@@ -131,8 +133,8 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        """if i < 1:
-            tensorboard_writer.add_figure('test', input[0])"""
+        if i < 1:
+            tensorboard_writer.add_image('test', input[0].numpy())
 
         if input is None:
             continue
