@@ -8,7 +8,7 @@ import torch
 from torch.nn.modules.loss import BCEWithLogitsLoss
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.utils.tensorboard import SummaryWriter
-import tqdm
+from tqdm import tqdm
 
 from custom_model import CustomModel
 
@@ -28,6 +28,8 @@ torch.manual_seed(24785)
 BATCH_SIZE = 32
 NB_EPOCHS = 10
 NUM_WORKER = 0
+#USE_CUDA = torch.cuda.is_available()
+
 writer_dir = "./logs"
 
 tensorboard_writer = SummaryWriter(writer_dir)
@@ -37,7 +39,7 @@ tensorboard_writer = SummaryWriter(writer_dir)
 
 image_transforms = {
     "train": transforms.Compose([
-        #transforms.Resize([288, 352, 3]),
+        transforms.Resize((288, 352)),
         transforms.ToTensor(),
         # TODO: add scaling here
         #transforms.RandomCrop(CROP_SIZE),
@@ -45,12 +47,8 @@ image_transforms = {
         transforms.RandomVerticalFlip(p=0.5)
     ]),
     "valid": transforms.Compose([
-        #transforms.Resize([288, 352, 3]),
+        transforms.Resize((288, 352)),
         transforms.ToTensor(),
-        # TODO: add scaling here
-        #transforms.RandomCrop(CROP_SIZE),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomVerticalFlip(p=0.5)
     ])
 
 }
@@ -86,14 +84,14 @@ sampler = WeightedRandomSampler(
 train_dataloader = DataLoader(
     train_dataset, 
     batch_size=BATCH_SIZE, 
-    #sampler = sampler, 
+    sampler = sampler, 
     num_workers=NUM_WORKER
 )
 
 valid_dataloader = DataLoader(
     valid_dataset, 
     batch_size=BATCH_SIZE, 
-    #sampler = sampler, 
+    sampler = sampler, 
     num_workers=NUM_WORKER
 )
 
@@ -105,7 +103,13 @@ optimizer = torch.optim.Adam(model.parameters())
 
 # %%
 
-criterion = BCEWithLogitsLoss(weight=torch.Tensor(class_weights), reduction='none')
+criterion = BCEWithLogitsLoss(
+    pos_weight=torch.Tensor(class_weights), 
+    reduction='none',
+    )
+
+# %%
+
 
 for epoch in range(NB_EPOCHS):
     print(f'Epoch {epoch}:')
