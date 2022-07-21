@@ -26,7 +26,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 10
+NB_EPOCHS = 20
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+
@@ -66,8 +66,8 @@ image_transforms = {
 
 }
 
-TRAIN_DATA_FOLDER = "data/images/train"
-VALID_DATA_FOLDER = "data/images/val"
+TRAIN_DATA_FOLDER = "data/images-sep/train"
+VALID_DATA_FOLDER = "data/images-sep/val"
 
 date = datetime.datetime.now()
 tmp_name = 'saved_models/leo_explo_' + datetime.datetime.strftime(date, '%H:%M:%S') +'.pt'
