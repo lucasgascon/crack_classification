@@ -28,7 +28,21 @@ torch.manual_seed(24785)
 BATCH_SIZE = 32
 NB_EPOCHS = 10
 NUM_WORKER = 0
-#USE_CUDA = torch.cuda.is_available()
+
+
+#%%
+# this ensures that the current MacOS version is at least 12.3+
+print(torch.backends.mps.is_available())
+# this ensures that the current current PyTorch installation was built with MPS activated.
+print(torch.backends.mps.is_built())
+if(torch.backends.mps.is_available() & torch.backends.mps.is_built()): 
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+print('device : ', device)
+#%%
+
+
 
 writer_dir = "./logs"
 
@@ -71,7 +85,7 @@ valid_dataset = ImageFolder(
 
 
 # compute samples_weights
-counts = np.bincount(train_dataset.classes)
+counts = np.bincount(train_dataset.targets)
 class_weights = 1. / counts
 samples_weights = class_weights[train_dataset.targets]
 
@@ -103,9 +117,10 @@ optimizer = torch.optim.Adam(model.parameters())
 
 # %%
 
-criterion = BCEWithLogitsLoss(
-    pos_weight=torch.Tensor(class_weights), 
+#pos_weight =  torch.Tensor(class_weights) * torch.ones(BATCH_SIZE,2)
+criterion = BCEWithLogitsLoss( 
     reduction='none',
+    #pos_weight=pos_weight,
     )
 
 # %%
@@ -136,7 +151,7 @@ for epoch in range(NB_EPOCHS):
         loss.backward()
         optimizer.step()
 
-        epoch_train_losses.append(loss.detach().cpu())
+        epoch_train_losses.append(loss.detach().to(device))
 
         stop = time.time()
        
@@ -153,7 +168,7 @@ for epoch in range(NB_EPOCHS):
         loss_per_sample = criterion(output, target.float())
         loss = loss_per_sample.mean()
 
-        epoch_valid_losses.append(loss.detach().cpu())
+        epoch_valid_losses.append(loss.detach().to(device))
 
         stop = time.time()
 
