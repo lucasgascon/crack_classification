@@ -29,8 +29,6 @@ BATCH_SIZE = 32
 NB_EPOCHS = 10
 NUM_WORKER = 0
 
-
-#%%
 # this ensures that the current MacOS version is at least 12.3+
 print(torch.backends.mps.is_available())
 # this ensures that the current current PyTorch installation was built with MPS activated.
@@ -42,8 +40,6 @@ else:
 print('device : ', device)
 #%%
 
-
-
 writer_dir = "./logs"
 
 tensorboard_writer = SummaryWriter(writer_dir)
@@ -53,15 +49,15 @@ tensorboard_writer = SummaryWriter(writer_dir)
 
 image_transforms = {
     "train": transforms.Compose([
-        transforms.Resize((288, 352)),
+        #transforms.Resize((288, 352)),
+        transforms.RandomResizedCrop((200,250)),
         transforms.ToTensor(),
-        # TODO: add scaling here
-        #transforms.RandomCrop(CROP_SIZE),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5)
     ]),
     "valid": transforms.Compose([
-        transforms.Resize((288, 352)),
+        #transforms.Resize((288, 352)),
+        transforms.RandomResizedCrop((200,250)),
         transforms.ToTensor(),
     ])
 
@@ -117,10 +113,10 @@ optimizer = torch.optim.Adam(model.parameters())
 
 # %%
 
-#pos_weight =  torch.Tensor(class_weights) * torch.ones(BATCH_SIZE,2)
+pos_weight = torch.Tensor([class_weights[0] / class_weights[1]])
 criterion = BCEWithLogitsLoss( 
     reduction='none',
-    #pos_weight=pos_weight,
+    pos_weight=pos_weight,
     )
 
 # %%
