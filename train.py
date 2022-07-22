@@ -10,12 +10,20 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+from torch import nn
+
 from custom_model import CustomModel
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
 
 from torchvision import transforms
+
+from sklearn.metrics import confusion_matrix
+import pandas as pd
+import matplotlib.pyplot as plt
+
+import seaborn as sns
 
 import numpy as np
 
@@ -51,19 +59,23 @@ tensorboard_writer = SummaryWriter(writer_dir)
 
 image_transforms = {
     "train": transforms.Compose([
-        #transforms.Resize((288, 352)),
-        transforms.RandomResizedCrop((200,250)),
+        # transforms.RandomResizedCrop(
+        #     size = (200,250),
+        #     scale = (0.8,1),
+        #     ratio = (0.75, 1.33),
+        # ),
+        transforms.Resize((200, 250)),
         transforms.ToTensor(),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
-        transforms.CenterCrop(10),
-        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        #transforms.CenterCrop(10),
+        # transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]),
     "valid": transforms.Compose([
         transforms.Resize((200, 250)),
         transforms.ToTensor(),
     ])
-
+    
 }
 
 TRAIN_DATA_FOLDER = "data/images-sep/train"
@@ -133,8 +145,10 @@ criterion = BCEWithLogitsLoss(
     pos_weight=pos_weight,
 )
 
-# %%
+# constant for classes
+classes = train_dataset.classes
 
+# %%
 
 for epoch in range(NB_EPOCHS):
     print(f'Epoch {epoch}:')
@@ -142,10 +156,13 @@ for epoch in range(NB_EPOCHS):
     epoch_valid_losses = []
     model.train()
 
+    y_train_pred = []
+    y_train_true = []
+
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        if i < 1:
+        if i < 5:
             tensorboard_writer.add_image('test', input[0].numpy())
         
         input = input.to(device)
@@ -155,10 +172,16 @@ for epoch in range(NB_EPOCHS):
             continue
         start = time.time()
 
-        output = model(input).view(-1)
+        output = model(input)
 
-        loss_per_sample = criterion(output, target.float())
+        output_ = (torch.max(torch.exp(output), 1)[1]).data.cpu().numpy()
+        y_train_pred.extend(output_)  # save prediction
+
+        loss_per_sample = criterion(output.view(-1), target.float())
         loss = loss_per_sample.mean()
+
+        target = target.data.cpu().numpy()
+        y_train_true.extend(target)  # save ground truth
 
         optimizer.zero_grad()
         loss.backward()
@@ -167,11 +190,14 @@ for epoch in range(NB_EPOCHS):
         epoch_train_losses.append(loss.detach().to('cpu'))
 
         stop = time.time()
-       
+
     
     torch.save(model.state_dict(), tmp_name)
 
     model.eval()
+
+    y_valid_pred = []
+    y_valid_true = []
 
     for i, (input, target) in enumerate(tqdm(valid_dataloader)):
 
@@ -182,12 +208,18 @@ for epoch in range(NB_EPOCHS):
             continue
         start = time.time()
 
-        output = model(input).view(-1)
+        output = model(input)
 
-        loss_per_sample = criterion(output, target.float())
+        output_ = (torch.max(torch.exp(output), 1)[1]).data.cpu().numpy()
+        y_valid_pred.extend(output_)  # save prediction
+
+        loss_per_sample = criterion(output.view(-1), target.float())
         loss = loss_per_sample.mean()
 
-        epoch_valid_losses.append(loss.detach().to('cpu'))
+        target = target.data.cpu().numpy()
+        y_valid_true.extend(target)  # save ground truth
+
+        epoch_valid_losses.append(loss.detach().cpu())
 
         stop = time.time()
 
@@ -203,6 +235,25 @@ for epoch in range(NB_EPOCHS):
         valid_loss,
         epoch)
 
+    # Build train confusion matrix
+    cf_matrix = confusion_matrix(y_train_true, y_train_pred)
+    df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
+                         columns=[i for i in classes])
+    plt.figure(figsize=(12, 7))    
+    train_heatmap = sns.heatmap(df_cm, annot=True).get_figure()
+    # Save train confusion matrix to Tensorboard
+    tensorboard_writer.add_figure("Train confusion matrix", train_heatmap, epoch)
+
+    # Build valid confusion matrix
+    cf_matrix = confusion_matrix(y_valid_true, y_valid_pred)
+    df_cm = pd.DataFrame(cf_matrix/np.sum(cf_matrix) * 2, index=[i for i in classes],
+                         columns=[i for i in classes])
+    plt.figure(figsize=(12, 7))    
+    valid_heatmap = sns.heatmap(df_cm, annot=True).get_figure()
+    # Save valid confusion matrix to Tensorboard
+    tensorboard_writer.add_figure("Valid confusion matrix", valid_heatmap, epoch)
+
     print(f'train_loss: {train_loss}')
     print(f'valid_loss: {valid_loss}')
+
 # %%
