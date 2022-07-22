@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from torch import nn
 
-from custom_model import CustomModel
+from custom_model import CustomModel, load_net_vgg16
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
@@ -47,20 +47,17 @@ if(torch.backends.mps.is_available() & torch.backends.mps.is_built()):
 else:
     device = torch.device("cpu")
 print('device : ', device)
-
-#device = torch.device("cpu")
 #%%
 
-writer_dir = "./logs/"
+now = datetime.datetime.now()
+writer_dir = "./logs/" + now.strftime('%m/%d , %H:%M') + '/'
 
 tensorboard_writer = SummaryWriter(writer_dir)
-
-# %%
 
 
 image_transforms = {
     "train": transforms.Compose([
-        transforms.Resize((200, 250)),
+        transforms.Resize((280, 350)),
         # transforms.RandomResizedCrop(
         #     size = (200,250),
         #     scale = (0.8,1),
@@ -69,11 +66,10 @@ image_transforms = {
         transforms.ToTensor(),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
-        transforms.CenterCrop(10),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]),
     "valid": transforms.Compose([
-        transforms.Resize((200, 250)),
+        transforms.Resize((280, 350)),
         transforms.ToTensor(),
     ])
     
@@ -82,8 +78,8 @@ image_transforms = {
 TRAIN_DATA_FOLDER = "data/images-sep/train"
 VALID_DATA_FOLDER = "data/images-sep/val"
 
-date = datetime.datetime.now()
-tmp_name = 'saved_models/leo_explo_' + datetime.datetime.strftime(date, '%H:%M:%S') +'.pt'
+now = datetime.datetime.now()
+tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
 
 
 train_dataset = ImageFolder(
@@ -133,12 +129,12 @@ valid_dataloader = DataLoader(
 )
 
 
-# %%
+# model = CustomModel().to(device)
 
-model = CustomModel().to(device)
+model = load_net_vgg16().to(device)
+
 optimizer = torch.optim.Adam(model.parameters())
 
-# %%
 
 pos_weight = torch.Tensor([train_class_weights[0] / train_class_weights[1]]).to(device)
 criterion = BCEWithLogitsLoss( 
@@ -163,8 +159,7 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        if i < 1:
-            # tensorboard_writer.add_image('test', input[0].numpy())
+        if (i < 1) & (NB_EPOCHS == 0):
             grid = make_grid(input)
             tensorboard_writer.add_image('images', grid, 0)
             tensorboard_writer.add_graph(model.cpu(), input)
@@ -179,7 +174,7 @@ for epoch in range(NB_EPOCHS):
 
         output = model(input)
 
-        output_ = (torch.max(torch.exp(output), 1)[1]).data.cpu().numpy()
+        output_ = (output.detach().cpu().numpy() > 0)
         y_train_pred.extend(output_)  # save prediction
 
         loss_per_sample = criterion(output.view(-1), target.float())
@@ -197,7 +192,7 @@ for epoch in range(NB_EPOCHS):
         stop = time.time()
 
     
-    torch.save(model.state_dict(), tmp_name)
+    # torch.save(model.state_dict(), tmp_name)
 
     model.eval()
 
@@ -215,7 +210,8 @@ for epoch in range(NB_EPOCHS):
 
         output = model(input)
 
-        output_ = (torch.max(torch.exp(output), 1)[1]).data.cpu().numpy()
+        #output_ = (torch.max(torch.exp(output), 1)[1]).data.cpu().numpy()
+        output_ = (output.detach().cpu().numpy() > 0)
         y_valid_pred.extend(output_)  # save prediction
 
         loss_per_sample = criterion(output.view(-1), target.float())
@@ -251,7 +247,7 @@ for epoch in range(NB_EPOCHS):
 
     # Build valid confusion matrix
     cf_matrix = confusion_matrix(y_valid_true, y_valid_pred)
-    df_cm = pd.DataFrame(cf_matrix/np.sum(cf_matrix) * 2, index=[i for i in classes],
+    df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
                          columns=[i for i in classes])
     plt.figure(figsize=(12, 7))    
     valid_heatmap = sns.heatmap(df_cm, annot=True).get_figure()
