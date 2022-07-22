@@ -165,6 +165,8 @@ for epoch in range(NB_EPOCHS):
         if i < 5:
             tensorboard_writer.add_image('test', input[0].numpy())
         
+        plt.imshow(input[0].numpy())
+
         input = input.to(device)
         target = target.to(device)
 
