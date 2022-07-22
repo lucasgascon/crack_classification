@@ -57,22 +57,24 @@ tensorboard_writer = SummaryWriter(writer_dir)
 
 image_transforms = {
     "train": transforms.Compose([
-        transforms.Resize((280, 350)),
-        # transforms.RandomResizedCrop(
-        #     size = (200,250),
-        #     scale = (0.8,1),
-        #     ratio = (0.75, 1.33),
-        # ),
+        transforms.RandomResizedCrop(
+            size = (200,250),
+            scale = (0.8,1),
+            ratio = (0.75, 1.33),
+        ),
         transforms.ToTensor(),
+        transforms.RandomRotation(
+            degrees = 10,
+        ),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]),
     "valid": transforms.Compose([
-        transforms.Resize((280, 350)),
+        transforms.Resize((200, 250)),
         transforms.ToTensor(),
-    ])
-    
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]) 
 }
 
 TRAIN_DATA_FOLDER = "data/images-sep/train"
