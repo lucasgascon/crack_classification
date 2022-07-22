@@ -52,7 +52,7 @@ device = torch.device('cpu')
 #%%
 
 now = datetime.datetime.now()
-writer_dir = "./logs/" + now.strftime('%m/%d , %H:%M') + '/'
+writer_dir = "./logs/" + now.strftime('%m.%d/%H:%M') + '/'
 
 tensorboard_writer = SummaryWriter(writer_dir)
 
