@@ -38,15 +38,17 @@ BATCH_SIZE = 32
 NB_EPOCHS = 20
 NUM_WORKER = 0
 
-# this ensures that the current MacOS version is at least 12.3+
-print(torch.backends.mps.is_available())
-# this ensures that the current current PyTorch installation was built with MPS activated.
-print(torch.backends.mps.is_built())
-if(torch.backends.mps.is_available() & torch.backends.mps.is_built()): 
-    device = torch.device("mps")
-else:
-    device = torch.device("cpu")
-print('device : ', device)
+# # this ensures that the current MacOS version is at least 12.3+
+# print(torch.backends.mps.is_available())
+# # this ensures that the current current PyTorch installation was built with MPS activated.
+# print(torch.backends.mps.is_built())
+# if(torch.backends.mps.is_available() & torch.backends.mps.is_built()): 
+#     device = torch.device("mps")
+# else:
+#     device = torch.device("cpu")
+# print('device : ', device)
+
+device = torch.device('cpu')
 #%%
 
 now = datetime.datetime.now()
@@ -131,9 +133,9 @@ valid_dataloader = DataLoader(
 )
 
 
-# model = CustomModel().to(device)
+model = CustomModel().to(device)
 
-model = load_net_vgg16().to(device)
+#model = load_net_vgg16().to(device)
 
 optimizer = torch.optim.Adam(model.parameters())
 

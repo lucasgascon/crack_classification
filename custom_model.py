@@ -5,6 +5,8 @@ from torch import nn
 import torch
 import torchvision
 
+from torchsummary import summary
+
 
 class Net16(nn.Module):
     def __init__(self):
@@ -50,8 +52,6 @@ class Net16(nn.Module):
                                    self.relu,
                                    self.encoder[28],
                                    self.relu)
-
-        self.final = nn.Linear(5849088, 1)
         
 
     def forward(self, x):
@@ -61,7 +61,8 @@ class Net16(nn.Module):
         conv4 = self.conv4(self.pool(conv3))
         conv5 = self.conv5(self.pool(conv4))
 
-        pred = self.final(conv5)
+        pred = conv5
+
         return pred
 
 #%%
@@ -79,7 +80,7 @@ def load_net_vgg16():
     model_dict = model.state_dict()
 
     # 1. filter out unnecessary keys
-    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in (model_dict.keys() & pretrained_dict.keys())}
+    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
     # 2. overwrite entries in the existing state dict
     model_dict.update(pretrained_dict) 
 
@@ -99,15 +100,14 @@ def load_net_vgg16():
 
     return model
 
+
+# %%
+
 model = load_net_vgg16()
+summary(model, (3, 200, 350))
 
 # %%
 
-model
-
-
-
-# %%
 
 class CustomModel(nn.Module):
     def __init__(self):
