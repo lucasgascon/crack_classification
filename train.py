@@ -16,6 +16,7 @@ from custom_model import CustomModel
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
+from torchvision.utils import make_grid
 
 from torchvision import transforms
 
@@ -59,17 +60,17 @@ tensorboard_writer = SummaryWriter(writer_dir)
 
 image_transforms = {
     "train": transforms.Compose([
+        transforms.Resize((200, 250)),
         # transforms.RandomResizedCrop(
         #     size = (200,250),
         #     scale = (0.8,1),
         #     ratio = (0.75, 1.33),
         # ),
-        transforms.Resize((200, 250)),
         transforms.ToTensor(),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
-        #transforms.CenterCrop(10),
-        # transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        transforms.CenterCrop(10),
+        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]),
     "valid": transforms.Compose([
         transforms.Resize((200, 250)),
@@ -162,10 +163,12 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        if i < 5:
-            tensorboard_writer.add_image('test', input[0].numpy())
-        
-        plt.imshow(input[0].numpy())
+        if i < 1:
+            # tensorboard_writer.add_image('test', input[0].numpy())
+            grid = make_grid(input)
+            tensorboard_writer.add_image('images', grid, 0)
+            tensorboard_writer.add_graph(model.cpu(), input)
+            model = model.to(device)
 
         input = input.to(device)
         target = target.to(device)
