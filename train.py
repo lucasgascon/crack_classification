@@ -35,7 +35,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 10
+NB_EPOCHS = 20
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+
@@ -58,38 +58,14 @@ writer_dir = "./logs/" + now.strftime('%m.%d/%H.%M') + '/'
 tensorboard_writer = SummaryWriter(writer_dir)
 
 
-image_T = {
-    "train": T.Compose([
-        T.RandomResizedCrop(
-            size = (200,250),
-            scale = (0.8,1),
-            ratio = (0.75, 1.33),
-        ),
-        T.ToTensor(),
-        T.RandomRotation(degrees = (0,180)),
-        # T.ColorJitter(
-        #     brightness=.5,
-        #     hue = .3,
-        # ),
-        # T.RandomPerspective(
-        #     distortion_scale=0.6,
-        #     p=1.0,
-        # ),
-        T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-    ]),
-    "valid": T.Compose([
-        T.Resize((200, 250)),
-        T.ToTensor(),
-        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]) 
-}
-
 TRAIN_DATA_FOLDER = "data/images-sep/train"
 VALID_DATA_FOLDER = "data/images-sep/val"
 
 now = datetime.datetime.now()
 tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
 
+
+from custom_dataset import image_T
 
 train_dataset = ImageFolder(
     root=TRAIN_DATA_FOLDER, 
@@ -111,7 +87,7 @@ train_sampler = WeightedRandomSampler(
     num_samples=len(train_samples_weights),
     replacement=False)
 
-# compute train samples_weights
+# compute valid samples_weights
 valid_counts = np.bincount(valid_dataset.targets)
 valid_class_weights = 1. / valid_counts
 valid_samples_weights = valid_class_weights[valid_dataset.targets]
@@ -252,7 +228,7 @@ for epoch in range(NB_EPOCHS):
         epoch)
 
     # Build train confusion matrix
-    cf_matrix = confusion_matrix(y_train_true, y_train_pred)
+    cf_matrix = confusion_matrix(y_train_true, y_train_pred, normalize = 'true')
     df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
                          columns=[i for i in classes])
     plt.figure(figsize=(12, 7))    

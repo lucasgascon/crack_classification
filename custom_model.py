@@ -68,7 +68,7 @@ class Net16(nn.Module):
         self.dropout = nn.Dropout(p=.1)
         self.flat = nn.Flatten()
 
-        self.fc = nn.Linear(92160,1)
+        self.fc = nn.Linear(138240,1)
 
     def forward(self, x):
         conv1 = self.conv1(x)
@@ -113,5 +113,5 @@ def load_net_vgg16():
 
 
 model = load_net_vgg16()
-summary(model, (3,200,250))
+summary(model, (3,250,300))
 # %%
