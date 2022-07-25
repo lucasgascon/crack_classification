@@ -246,14 +246,16 @@ for epoch in range(NB_EPOCHS):
     # Save valid confusion matrix to Tensorboard
     tensorboard_writer.add_figure("Valid confusion matrix", valid_heatmap, epoch)
 
-    # # Classification report
-    # train_classif_report = classification_report(y_train_true, y_train_pred)
-    # plt.figure(figsize=(12, 7)) 
-    # tensorboard_writer.add_figure("Train classif report", train_classif_report, epoch)
+    # Classification report
+    train_classif_report = classification_report(y_train_true, y_train_pred, labels = classes)
+    plt.figure(figsize=(12, 7)) 
+    train_heatmap = sns.heatmap(pd.DataFrame(train_classif_report).iloc[:-1,:].T, annot=True)
+    tensorboard_writer.add_figure("Train classif report", train_heatmap, epoch)
 
-    # valid_classif_report = classification_report(y_valid_true, y_valid_pred)
-    # plt.figure(figsize=(12, 7)) 
-    # tensorboard_writer.add_figure("Valid classif report", valid_classif_report, epoch)
+    valid_classif_report = classification_report(y_valid_true, y_valid_pred)
+    plt.figure(figsize=(12, 7)) 
+    valid_heatmap = sns.heatmap(pd.DataFrame(valid_classif_report).iloc[:-1,:].T, annot=True)
+    tensorboard_writer.add_figure("Valid classif report", valid_heatmap, epoch)
 
 
     print(f'train_loss: {train_loss}')
