@@ -8,12 +8,16 @@ import torchvision
 from torchsummary import summary
 
 
+
+
 class CustomModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.backbone = timm.create_model(
             'resnet50',
-            pretrained=True)
+            pretrained=True,
+            )
+
         self.linear = nn.Linear(1000, 1)
 
 
@@ -22,6 +26,22 @@ class CustomModel(nn.Module):
         pred = self.linear(hidden)
         return pred
 
+class CrackClassifier(nn.Module):
+    def __init__(self, device):
+        super(CrackClassifier,self).__init__()
+        self.resnet = timm.create_model(
+            'resnet50',
+            pretrained=True)
+        self.resnet_fc = nn.Sequential(
+               nn.Linear(1000, 128),
+               nn.ReLU(inplace=True),
+               nn.Linear(128, 1),
+               nn.LogSoftmax(dim=1)).to(device)
+
+    def forward(self,x):
+        x = self.resnet(x)
+        x = self.resnet_fc(x)
+        return x
 
 class Net16(nn.Module):
     def __init__(self):

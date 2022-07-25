@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from torch import nn
 
-from custom_model import CustomModel, load_net_vgg16, unfreeze
+from custom_model import CustomModel, load_net_vgg16, unfreeze, CrackClassifier
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
@@ -30,6 +30,8 @@ import seaborn as sns
 import numpy as np
 
 import os
+
+from torchmetrics import PrecisionRecallCurve
 
 
 random.seed(24785)
@@ -59,8 +61,8 @@ writer_dir = "./logs/" + now.strftime('%m.%d/%H.%M') + '/'
 tensorboard_writer = SummaryWriter(writer_dir)
 
 
-TRAIN_DATA_FOLDER = "data/masks-sep/train"
-VALID_DATA_FOLDER = "data/masks-sep/val"
+TRAIN_DATA_FOLDER = "data/images-sep/train"
+VALID_DATA_FOLDER = "data/images-sep/val"
 
 now = datetime.datetime.now()
 tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
@@ -115,9 +117,10 @@ valid_dataloader = DataLoader(
 )
 
 
-model = CustomModel().to(device)
-
+# model = CustomModel().to(device)
+model = CrackClassifier(device).to(device)
 # model = load_net_vgg16().to(device)
+
 
 optimizer = torch.optim.Adam(
     model.parameters(),
@@ -145,10 +148,7 @@ for epoch in range(NB_EPOCHS):
     epoch_train_losses = []
     epoch_valid_losses = []
 
-    model = unfreeze(model, epoch)
-
-
-
+    # model = unfreeze(model, epoch)
 
     model.train()
 
@@ -158,11 +158,12 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        # if (i < 1) and (epoch == 0):
-        #     grid = make_grid(input)
-        #     tensorboard_writer.add_image('images', grid, 0)
-        #     tensorboard_writer.add_graph(model.cpu(), input)
-        #     model = model.to(device)
+        if (i < 1) and (epoch == 0):
+            # grid = make_grid(input).permute(1,2,0)
+            grid = make_grid(input, normalize = True)
+            tensorboard_writer.add_image('images', grid, 0)
+            tensorboard_writer.add_graph(model.cpu(), input)
+            model = model.to(device)
 
         input = input.to(device)
         target = target.to(device)
@@ -190,13 +191,13 @@ for epoch in range(NB_EPOCHS):
 
         stop = time.time()
 
-    
     # torch.save(model.state_dict(), tmp_name)
 
     model.eval()
 
     y_valid_pred = []
     y_valid_true = []
+
 
     for i, (input, target) in enumerate(tqdm(valid_dataloader)):
 
@@ -252,10 +253,10 @@ for epoch in range(NB_EPOCHS):
     # Save valid confusion matrix to Tensorboard
     tensorboard_writer.add_figure("Valid confusion matrix", valid_heatmap, epoch)
 
+    # Precision recall curve
+
     print(f'train_loss: {train_loss}')
     print(f'valid_loss: {valid_loss}')
 
 tensorboard_writer.close()
-# %%
-
 # %%
