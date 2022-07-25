@@ -31,9 +31,6 @@ import numpy as np
 
 import os
 
-from torchmetrics import PrecisionRecallCurve
-
-
 random.seed(24785)
 torch.manual_seed(24785)
 
@@ -118,8 +115,8 @@ valid_dataloader = DataLoader(
 
 
 # model = CustomModel().to(device)
-model = CrackClassifier(device).to(device)
-# model = load_net_vgg16().to(device)
+# model = CrackClassifier(device).to(device)
+model = load_net_vgg16().to(device)
 
 
 optimizer = torch.optim.Adam(
@@ -148,7 +145,7 @@ for epoch in range(NB_EPOCHS):
     epoch_train_losses = []
     epoch_valid_losses = []
 
-    # model = unfreeze(model, epoch)
+    model = unfreeze(model, epoch)
 
     model.train()
 
@@ -159,7 +156,6 @@ for epoch in range(NB_EPOCHS):
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
         if (i < 1) and (epoch == 0):
-            # grid = make_grid(input).permute(1,2,0)
             grid = make_grid(input, normalize = True)
             tensorboard_writer.add_image('images', grid, 0)
             tensorboard_writer.add_graph(model.cpu(), input)
