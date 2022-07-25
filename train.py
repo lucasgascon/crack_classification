@@ -38,17 +38,18 @@ BATCH_SIZE = 32
 NB_EPOCHS = 10
 NUM_WORKER = 0
 
-# # this ensures that the current MacOS version is at least 12.3+
-# print(torch.backends.mps.is_available())
-# # this ensures that the current current PyTorch installation was built with MPS activated.
-# print(torch.backends.mps.is_built())
-# if(torch.backends.mps.is_available() & torch.backends.mps.is_built()): 
-#     device = torch.device("mps")
-# else:
-#     device = torch.device("cpu")
-# print('device : ', device)
+# this ensures that the current MacOS version is at least 12.3+
+print(torch.backends.mps.is_available())
+# this ensures that the current current PyTorch installation was built with MPS activated.
+print(torch.backends.mps.is_built())
+if(torch.backends.mps.is_available() & torch.backends.mps.is_built()): 
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+print('device : ', device)
 
-device = torch.device('cpu')
+#device = torch.device('cpu')
+
 #%%
 
 now = datetime.datetime.now()
@@ -86,8 +87,8 @@ image_T = {
     ]) 
 }
 
-TRAIN_DATA_FOLDER = "data/images-sep/train"
-VALID_DATA_FOLDER = "data/images-sep/val"
+TRAIN_DATA_FOLDER = "data/masks-sep/train"
+VALID_DATA_FOLDER = "data/masks-sep/val"
 
 now = datetime.datetime.now()
 tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
@@ -177,7 +178,7 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        if (i < 1) and (NB_EPOCHS == 0):
+        if (i < 1) and (epoch == 0):
             grid = make_grid(input)
             tensorboard_writer.add_image('images', grid, 0)
             tensorboard_writer.add_graph(model.cpu(), input)
@@ -228,7 +229,6 @@ for epoch in range(NB_EPOCHS):
 
         output = model(input)
 
-        #output_ = (torch.max(torch.exp(output), 1)[1]).data.cpu().numpy()
         output_ = (output.detach().cpu().numpy() > 0)
         y_valid_pred.extend(output_)  # save prediction
 

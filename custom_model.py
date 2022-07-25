@@ -8,6 +8,21 @@ import torchvision
 from torchsummary import summary
 
 
+class CustomModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.backbone = timm.create_model(
+            'resnet50',
+            pretrained=True)
+        self.linear = nn.Linear(1000, 1)
+
+
+    def forward(self, x):
+        hidden = self.backbone(x)
+        pred = self.linear(hidden)
+        return pred
+
+
 class Net16(nn.Module):
     def __init__(self):
         super().__init__()
@@ -49,6 +64,8 @@ class Net16(nn.Module):
                                    self.encoder[28],
                                    self.relu)
         
+        self.batchnorm = nn.BatchNorm2d(512)
+        self.dropout = nn.Dropout(p=.1)
         self.flat = nn.Flatten()
 
         self.fc = nn.Linear(92160,1)
@@ -60,20 +77,16 @@ class Net16(nn.Module):
         conv4 = self.conv4(self.pool(conv3))
         conv5 = self.conv5(self.pool(conv4))
 
-        x = self.flat(conv5)
+        x = self.batchnorm(conv5)
+        x = self.dropout(x)
+        x = self.flat(x)
         x = self.fc(x)
 
         return x
 
-#%%
 
 def load_net_vgg16():
     model = Net16()
-
-    # checkpoint = torch.load('models/model_unet_vgg_16_best.pt', map_location=torch.device('cpu'))
-    # sub_keys = ('encoder.0.weight', 'encoder.0.bias', 'encoder.2.weight', 'encoder.2.bias', 'encoder.5.weight', 'encoder.5.bias', 'encoder.7.weight', 'encoder.7.bias', 'encoder.10.weight', 'encoder.10.bias', 'encoder.12.weight', 'encoder.12.bias', 'encoder.14.weight', 'encoder.14.bias', 'encoder.17.weight', 'encoder.17.bias', 'encoder.19.weight', 'encoder.19.bias', 'encoder.21.weight', 'encoder.21.bias', 'encoder.24.weight', 'encoder.24.bias', 'encoder.26.weight', 'encoder.26.bias', 'encoder.28.weight', 'encoder.28.bias', 'conv1.0.weight', 'conv1.0.bias', 'conv1.2.weight', 'conv1.2.bias', 'conv2.0.weight', 'conv2.0.bias', 'conv2.2.weight', 'conv2.2.bias', 'conv3.0.weight', 'conv3.0.bias', 'conv3.2.weight', 'conv3.2.bias', 'conv3.4.weight', 'conv3.4.bias', 'conv4.0.weight', 'conv4.0.bias', 'conv4.2.weight', 'conv4.2.bias', 'conv4.4.weight', 'conv4.4.bias', 'conv5.0.weight', 'conv5.0.bias', 'conv5.2.weight', 'conv5.2.bias', 'conv5.4.weight', 'conv5.4.bias')
-    # sub_checkpoint = {k:v for k, v in checkpoint['model'].items() if k in sub_keys}
-    # model.load_state_dict(sub_checkpoint)
 
     pretrained_dict = torch.load('models/model_unet_vgg_16_best.pt', map_location=torch.device('cpu'))['model']
 
@@ -88,43 +101,17 @@ def load_net_vgg16():
     # model.load_state_dict(pretrained_dict)
     model.load_state_dict(model_dict)
 
-
     # Freeze first layers
     model.conv1.requires_grad_(False)
     model.conv2.requires_grad_(False)
-    model.conv3.requires_grad_(False)
-    model.conv4.requires_grad_(False)
 
-
+    model.conv3.requires_grad_(True)
+    model.conv4.requires_grad_(True)
     model.conv5.requires_grad_(True)
 
     return model
 
 
-# %%
-
 model = load_net_vgg16()
-summary(model, (3, 200, 250))
-
-# %%
-
-
-class CustomModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.backbone = timm.create_model(
-            'resnet50',
-            pretrained=True)
-        self.linear = nn.Linear(1000, 1)
-        #self.softmax = nn.Softmax(dim = 1)
-
-
-    def forward(self, x):
-        hidden = self.backbone(x)
-        pred = self.linear(hidden)
-        #pred = self.softmax(x)
-        return pred
-
-
-
+summary(model, (3,200,250))
 # %%
