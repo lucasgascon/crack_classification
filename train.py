@@ -115,16 +115,16 @@ valid_dataloader = DataLoader(
 )
 
 
-# model = CustomModel().to(device)
+model = CustomModel().to(device)
 
-model = load_net_vgg16().to(device)
+# model = load_net_vgg16().to(device)
 
 optimizer = torch.optim.Adam(
     model.parameters(),
     lr = 0.005,
     betas = (0.9,0.999),
     eps = 1e-08,
-    weight_decay = 1e-3,
+    # weight_decay = 1e-3,
     amsgrad = False,
 )
 
