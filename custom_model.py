@@ -102,15 +102,15 @@ def load_net_vgg16():
     model.load_state_dict(model_dict)
 
     # Freeze first layers
-    model.conv1.requires_grad_(True)
-    model.conv2.requires_grad_(True)
-    model.conv3.requires_grad_(True)
-    model.conv4.requires_grad_(True)
-    model.conv5.requires_grad_(True)
+    model.conv1.requires_grad_(False)
+    model.conv2.requires_grad_(False)
+    model.conv3.requires_grad_(False)
+    model.conv4.requires_grad_(False)
+    model.conv5.requires_grad_(False)
 
     return model
 
 
 model = load_net_vgg16()
 summary(model, (3,250,300))
-# %%
+

@@ -229,7 +229,7 @@ for epoch in range(NB_EPOCHS):
         epoch)
 
     # Build train confusion matrix
-    cf_matrix = confusion_matrix(y_train_true, y_train_pred, normalize = 'true')
+    cf_matrix = confusion_matrix(y_train_true, y_train_pred)
     df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
                          columns=[i for i in classes])
     plt.figure(figsize=(12, 7))    
@@ -238,7 +238,7 @@ for epoch in range(NB_EPOCHS):
     tensorboard_writer.add_figure("Train confusion matrix", train_heatmap, epoch)
 
     # Build valid confusion matrix
-    cf_matrix = confusion_matrix(y_valid_true, y_valid_pred, normalize = 'true')
+    cf_matrix = confusion_matrix(y_valid_true, y_valid_pred)
     df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
                          columns=[i for i in classes])
     plt.figure(figsize=(12, 7))    
