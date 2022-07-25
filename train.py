@@ -31,7 +31,6 @@ import numpy as np
 
 import os
 
-from torchmetrics import PrecisionRecallCurve
 
 
 random.seed(24785)
@@ -88,7 +87,8 @@ train_samples_weights = train_class_weights[train_dataset.targets]
 train_sampler = WeightedRandomSampler(
     weights=train_samples_weights,
     num_samples=len(train_samples_weights),
-    replacement=False)
+    # replacement=False,
+    )
 
 # compute valid samples_weights
 valid_counts = np.bincount(valid_dataset.targets)
@@ -98,7 +98,8 @@ valid_samples_weights = valid_class_weights[valid_dataset.targets]
 valid_sampler = WeightedRandomSampler(
     weights=valid_samples_weights,
     num_samples=len(valid_samples_weights),
-    replacement=False)
+    # replacement=False,
+    )
 
 
 
@@ -117,8 +118,8 @@ valid_dataloader = DataLoader(
 )
 
 
-# model = CustomModel().to(device)
-model = CrackClassifier(device).to(device)
+model = CustomModel().to(device)
+# model = CrackClassifier(device).to(device)
 # model = load_net_vgg16().to(device)
 
 
