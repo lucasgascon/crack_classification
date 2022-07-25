@@ -133,9 +133,9 @@ valid_dataloader = DataLoader(
 )
 
 
-model = CustomModel().to(device)
+#model = CustomModel().to(device)
 
-#model = load_net_vgg16().to(device)
+model = load_net_vgg16().to(device)
 
 optimizer = torch.optim.Adam(model.parameters())
 

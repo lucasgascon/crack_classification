@@ -54,6 +54,12 @@ class Net16(nn.Module):
                                    self.relu)
         
 
+        self.pool2 = nn.MaxPool2d(2,2)
+        self.norm = nn.BatchNorm2d(512)
+        self.flat = nn.Flatten()
+        self.fc = nn.Linear(30720, 1)
+        
+
     def forward(self, x):
         conv1 = self.conv1(x)
         conv2 = self.conv2(self.pool(conv1))
@@ -61,9 +67,12 @@ class Net16(nn.Module):
         conv4 = self.conv4(self.pool(conv3))
         conv5 = self.conv5(self.pool(conv4))
 
-        pred = conv5
+        x = self.pool2(conv5)
+        x = self.norm(x)
+        x = self.flat(x)
+        x = self.fc(x)
 
-        return pred
+        return x
 
 #%%
 
