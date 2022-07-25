@@ -35,7 +35,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 20
+NB_EPOCHS = 30
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+

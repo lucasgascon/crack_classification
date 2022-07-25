@@ -130,8 +130,8 @@ def load_net_vgg16():
     model.conv1.requires_grad_(False)
     model.conv2.requires_grad_(False)
     model.conv3.requires_grad_(False)
-    model.conv4.requires_grad_(False)
-    model.conv5.requires_grad_(False)
+    model.conv4.requires_grad_(True)
+    model.conv5.requires_grad_(True)
 
 
     return model
@@ -142,7 +142,7 @@ summary(model, (3,250,300))
 
 
 def unfreeze(model, epoch) : 
-    NB_EPOCH = 10
+    NB_EPOCH = 30
 
     k= NB_EPOCH//4
 
