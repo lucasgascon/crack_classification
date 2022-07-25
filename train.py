@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from torch import nn
 
-from custom_model import CustomModel, load_net_vgg16
+from custom_model import CustomModel, load_net_vgg16, unfreeze
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
@@ -59,8 +59,8 @@ writer_dir = "./logs/" + now.strftime('%m.%d/%H.%M') + '/'
 tensorboard_writer = SummaryWriter(writer_dir)
 
 
-TRAIN_DATA_FOLDER = "data/images-sep/train"
-VALID_DATA_FOLDER = "data/images-sep/val"
+TRAIN_DATA_FOLDER = "data/masks-sep/train"
+VALID_DATA_FOLDER = "data/masks-sep/val"
 
 now = datetime.datetime.now()
 tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
@@ -144,6 +144,12 @@ for epoch in range(NB_EPOCHS):
     print(f'Epoch {epoch}:')
     epoch_train_losses = []
     epoch_valid_losses = []
+
+    model = unfreeze(model, epoch)
+
+
+
+
     model.train()
 
     y_train_pred = []
@@ -152,11 +158,11 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        if (i < 1) and (epoch == 0):
-            grid = make_grid(input)
-            tensorboard_writer.add_image('images', grid, 0)
-            tensorboard_writer.add_graph(model.cpu(), input)
-            model = model.to(device)
+        # if (i < 1) and (epoch == 0):
+        #     grid = make_grid(input)
+        #     tensorboard_writer.add_image('images', grid, 0)
+        #     tensorboard_writer.add_graph(model.cpu(), input)
+        #     model = model.to(device)
 
         input = input.to(device)
         target = target.to(device)
@@ -246,19 +252,10 @@ for epoch in range(NB_EPOCHS):
     # Save valid confusion matrix to Tensorboard
     tensorboard_writer.add_figure("Valid confusion matrix", valid_heatmap, epoch)
 
-    # Classification report
-    train_classif_report = classification_report(y_train_true, y_train_pred, labels = classes)
-    plt.figure(figsize=(12, 7)) 
-    train_heatmap = sns.heatmap(pd.DataFrame(train_classif_report).iloc[:-1,:].T, annot=True)
-    tensorboard_writer.add_figure("Train classif report", train_heatmap, epoch)
-
-    valid_classif_report = classification_report(y_valid_true, y_valid_pred)
-    plt.figure(figsize=(12, 7)) 
-    valid_heatmap = sns.heatmap(pd.DataFrame(valid_classif_report).iloc[:-1,:].T, annot=True)
-    tensorboard_writer.add_figure("Valid classif report", valid_heatmap, epoch)
-
-
     print(f'train_loss: {train_loss}')
     print(f'valid_loss: {valid_loss}')
+
+tensorboard_writer.close()
+# %%
 
 # %%

@@ -114,3 +114,43 @@ def load_net_vgg16():
 model = load_net_vgg16()
 summary(model, (3,250,300))
 
+
+def unfreeze(model, epoch) : 
+    if epoch == 0 : 
+        model.conv1.requires_grad_(False)
+        model.conv2.requires_grad_(False)
+        model.conv3.requires_grad_(False)
+        model.conv4.requires_grad_(False)
+        model.conv5.requires_grad_(False)
+
+    if epoch == 5 : 
+        model.conv1.requires_grad_(False)
+        model.conv2.requires_grad_(False)
+        model.conv3.requires_grad_(False)
+        model.conv4.requires_grad_(False)
+        model.conv5.requires_grad_(True)
+
+    if epoch == 10 : 
+        model.conv1.requires_grad_(False)
+        model.conv2.requires_grad_(False)
+        model.conv3.requires_grad_(False)
+        model.conv4.requires_grad_(True)
+        model.conv5.requires_grad_(True)
+
+    
+    if epoch == 15 : 
+        model.conv1.requires_grad_(False)
+        model.conv2.requires_grad_(False)
+        model.conv3.requires_grad_(True)
+        model.conv4.requires_grad_(True)
+        model.conv5.requires_grad_(True)
+
+    if epoch == 20 : 
+        model.conv1.requires_grad_(True)
+        model.conv2.requires_grad_(True)
+        model.conv3.requires_grad_(True)
+        model.conv4.requires_grad_(True)
+        model.conv5.requires_grad_(True)
+
+    return model
+
