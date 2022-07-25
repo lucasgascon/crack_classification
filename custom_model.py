@@ -64,8 +64,8 @@ class Net16(nn.Module):
                                    self.encoder[28],
                                    self.relu)
         
-        self.batchnorm = nn.BatchNorm2d(512)
-        self.dropout = nn.Dropout(p=.1)
+        # self.batchnorm = nn.BatchNorm2d(512)
+        # self.dropout = nn.Dropout(p=.1)
         self.flat = nn.Flatten()
 
         self.fc = nn.Linear(138240,1)
@@ -77,9 +77,9 @@ class Net16(nn.Module):
         conv4 = self.conv4(self.pool(conv3))
         conv5 = self.conv5(self.pool(conv4))
 
-        x = self.batchnorm(conv5)
-        x = self.dropout(x)
-        x = self.flat(x)
+        # x = self.batchnorm(conv5)
+        # x = self.dropout(x)
+        x = self.flat(conv5)
         x = self.fc(x)
 
         return x
@@ -102,9 +102,8 @@ def load_net_vgg16():
     model.load_state_dict(model_dict)
 
     # Freeze first layers
-    model.conv1.requires_grad_(False)
-    model.conv2.requires_grad_(False)
-
+    model.conv1.requires_grad_(True)
+    model.conv2.requires_grad_(True)
     model.conv3.requires_grad_(True)
     model.conv4.requires_grad_(True)
     model.conv5.requires_grad_(True)

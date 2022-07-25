@@ -1,6 +1,7 @@
 # %%
 
 import datetime
+from locale import normalize
 import random
 import time
 
@@ -20,7 +21,7 @@ from torchvision.utils import make_grid
 
 import torchvision.transforms as T
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -237,13 +238,23 @@ for epoch in range(NB_EPOCHS):
     tensorboard_writer.add_figure("Train confusion matrix", train_heatmap, epoch)
 
     # Build valid confusion matrix
-    cf_matrix = confusion_matrix(y_valid_true, y_valid_pred)
+    cf_matrix = confusion_matrix(y_valid_true, y_valid_pred, normalize = 'true')
     df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
                          columns=[i for i in classes])
     plt.figure(figsize=(12, 7))    
     valid_heatmap = sns.heatmap(df_cm, annot=True).get_figure()
     # Save valid confusion matrix to Tensorboard
     tensorboard_writer.add_figure("Valid confusion matrix", valid_heatmap, epoch)
+
+    # Classification report
+    train_classif_report = classification_report(y_train_true, y_train_pred)
+    plt.figure(figsize=(12, 7)) 
+    tensorboard_writer.add_figure("Train classif report", train_classif_report, epoch)
+
+    valid_classif_report = classification_report(y_valid_true, y_valid_pred)
+    plt.figure(figsize=(12, 7)) 
+    tensorboard_writer.add_figure("Valid classif report", valid_classif_report, epoch)
+
 
     print(f'train_loss: {train_loss}')
     print(f'valid_loss: {valid_loss}')
