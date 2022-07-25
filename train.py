@@ -18,7 +18,7 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
 from torchvision.utils import make_grid
 
-from torchvision import transforms
+import torchvision.transforms as T
 
 from sklearn.metrics import confusion_matrix
 import pandas as pd
@@ -35,7 +35,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 20
+NB_EPOCHS = 10
 NUM_WORKER = 0
 
 # # this ensures that the current MacOS version is at least 12.3+
@@ -57,25 +57,32 @@ writer_dir = "./logs/" + now.strftime('%m.%d/%H.%M') + '/'
 tensorboard_writer = SummaryWriter(writer_dir)
 
 
-image_transforms = {
-    "train": transforms.Compose([
-        transforms.RandomResizedCrop(
+image_T = {
+    "train": T.Compose([
+        T.RandomResizedCrop(
             size = (200,250),
             scale = (0.8,1),
             ratio = (0.75, 1.33),
         ),
-        transforms.ToTensor(),
-        transforms.RandomRotation(
+        T.ToTensor(),
+        T.RandomRotation(
             degrees = 10,
         ),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomVerticalFlip(p=0.5),
-        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        T.RandomRotation(degrees = (0,180)),
+        T.ColorJitter(
+            brightness=.5,
+            hue = .3,
+        ),
+        T.RandomPerspective(
+            distortion_scale=0.6,
+            p=1.0,
+        ),
+        T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]),
-    "valid": transforms.Compose([
-        transforms.Resize((200, 250)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    "valid": T.Compose([
+        T.Resize((200, 250)),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ]) 
 }
 
@@ -88,11 +95,11 @@ tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
 
 train_dataset = ImageFolder(
     root=TRAIN_DATA_FOLDER, 
-    transform=image_transforms['train']
+    transform=image_T['train']
     )
 valid_dataset = ImageFolder(
     root=VALID_DATA_FOLDER, 
-    transform=image_transforms['valid']
+    transform=image_T['valid']
     )
 
 
@@ -133,11 +140,18 @@ valid_dataloader = DataLoader(
 )
 
 
-#model = CustomModel().to(device)
+model = CustomModel().to(device)
 
-model = load_net_vgg16().to(device)
+# model = load_net_vgg16().to(device)
 
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr = 0.005,
+    betas = (0.9,0.999),
+    eps = 1e-08,
+    weight_decay = 1e-3,
+    amsgrad = False,
+)
 
 
 pos_weight = torch.Tensor([train_class_weights[0] / train_class_weights[1]]).to(device)
@@ -163,7 +177,7 @@ for epoch in range(NB_EPOCHS):
     stop = time.time()
     for i, (input, target) in enumerate(tqdm(train_dataloader)):
 
-        if (i < 1) & (NB_EPOCHS == 0):
+        if (i < 1) and (NB_EPOCHS == 0):
             grid = make_grid(input)
             tensorboard_writer.add_image('images', grid, 0)
             tensorboard_writer.add_graph(model.cpu(), input)

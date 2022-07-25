@@ -12,11 +12,7 @@ class Net16(nn.Module):
     def __init__(self):
         super().__init__()
 
-
-        # self.num_classes = 1
-
         self.pool = nn.MaxPool2d(2, 2)
-
 
         self.encoder = torchvision.models.vgg16(pretrained=False).features
 
@@ -53,12 +49,9 @@ class Net16(nn.Module):
                                    self.encoder[28],
                                    self.relu)
         
-
-        self.pool2 = nn.MaxPool2d(2,2)
-        self.norm = nn.BatchNorm2d(512)
         self.flat = nn.Flatten()
-        self.fc = nn.Linear(30720, 1)
-        
+
+        self.fc = nn.Linear(92160,1)
 
     def forward(self, x):
         conv1 = self.conv1(x)
@@ -67,9 +60,7 @@ class Net16(nn.Module):
         conv4 = self.conv4(self.pool(conv3))
         conv5 = self.conv5(self.pool(conv4))
 
-        x = self.pool2(conv5)
-        x = self.norm(x)
-        x = self.flat(x)
+        x = self.flat(conv5)
         x = self.fc(x)
 
         return x
@@ -113,7 +104,7 @@ def load_net_vgg16():
 # %%
 
 model = load_net_vgg16()
-summary(model, (3, 200, 350))
+summary(model, (3, 200, 250))
 
 # %%
 
