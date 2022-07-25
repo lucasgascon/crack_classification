@@ -66,18 +66,15 @@ image_T = {
             ratio = (0.75, 1.33),
         ),
         T.ToTensor(),
-        T.RandomRotation(
-            degrees = 10,
-        ),
         T.RandomRotation(degrees = (0,180)),
-        T.ColorJitter(
-            brightness=.5,
-            hue = .3,
-        ),
-        T.RandomPerspective(
-            distortion_scale=0.6,
-            p=1.0,
-        ),
+        # T.ColorJitter(
+        #     brightness=.5,
+        #     hue = .3,
+        # ),
+        # T.RandomPerspective(
+        #     distortion_scale=0.6,
+        #     p=1.0,
+        # ),
         T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]),
     "valid": T.Compose([
@@ -87,8 +84,8 @@ image_T = {
     ]) 
 }
 
-TRAIN_DATA_FOLDER = "data/masks-sep/train"
-VALID_DATA_FOLDER = "data/masks-sep/val"
+TRAIN_DATA_FOLDER = "data/images-sep/train"
+VALID_DATA_FOLDER = "data/images-sep/val"
 
 now = datetime.datetime.now()
 tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
@@ -141,9 +138,9 @@ valid_dataloader = DataLoader(
 )
 
 
-model = CustomModel().to(device)
+# model = CustomModel().to(device)
 
-# model = load_net_vgg16().to(device)
+model = load_net_vgg16().to(device)
 
 optimizer = torch.optim.Adam(
     model.parameters(),
