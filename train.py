@@ -14,6 +14,7 @@ from tqdm import tqdm
 from torch import nn
 
 from custom_model import CustomModel, load_net_vgg16, unfreeze, CrackClassifier
+from logs import plot_classification_report
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
@@ -21,7 +22,7 @@ from torchvision.utils import make_grid
 
 import torchvision.transforms as T
 
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, accuracy_score
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -62,7 +63,7 @@ TRAIN_DATA_FOLDER = "data/images-sep/train"
 VALID_DATA_FOLDER = "data/images-sep/val"
 
 now = datetime.datetime.now()
-tmp_name = 'saved_models/leo_explo_' + now.strftime('%m/%d , %H:%M') +'.pt'
+tmp_name = 'saved_models/leo_explo_' + now.strftime('%m_%d_%H_%M') +'.pt'
 
 
 from custom_dataset import image_T
@@ -138,6 +139,8 @@ criterion = BCEWithLogitsLoss(
 # constant for classes
 classes = train_dataset.classes
 
+best_accuracy = 0
+
 # %%
 
 for epoch in range(NB_EPOCHS):
@@ -145,7 +148,7 @@ for epoch in range(NB_EPOCHS):
     epoch_train_losses = []
     epoch_valid_losses = []
 
-    model = unfreeze(model, epoch)
+    # model = unfreeze(model, epoch)
 
     model.train()
 
@@ -187,7 +190,13 @@ for epoch in range(NB_EPOCHS):
 
         stop = time.time()
 
-    # torch.save(model.state_dict(), tmp_name)
+    # torch.save({
+    #         'epoch': epoch,
+    #         'model_state_dict': model.state_dict(),
+    #         'optimizer_state_dict': optimizer.state_dict(),
+    #         'loss': loss,
+    #         }, tmp_name)
+
 
     model.eval()
 
@@ -218,6 +227,13 @@ for epoch in range(NB_EPOCHS):
         epoch_valid_losses.append(loss.detach().cpu())
 
         stop = time.time()
+
+    accuracy = accuracy_score(y_valid_true, y_valid_pred)
+    if accuracy > best_accuracy :
+        print('Saved epoch ' + str(epoch) + ' whose accuracy is ' + str(accuracy))
+        best_accuracy = accuracy 
+        torch.save(model, tmp_name)
+
 
     train_loss = sum(epoch_train_losses) / len(epoch_train_losses)
     valid_loss = sum(epoch_valid_losses) / len(epoch_valid_losses)
@@ -250,9 +266,17 @@ for epoch in range(NB_EPOCHS):
     tensorboard_writer.add_figure("Valid confusion matrix", valid_heatmap, epoch)
 
     # Precision recall curve
+    train_classif_report_heatmap = plot_classification_report(y_train_true, y_train_pred)
+    tensorboard_writer.add_figure("Train classif report", train_classif_report_heatmap.get_figure(), epoch)
+
+    valid_classif_report_heatmap = plot_classification_report(y_valid_true, y_valid_pred)
+    tensorboard_writer.add_figure("Valid classif report", valid_classif_report_heatmap.get_figure(), epoch)
 
     print(f'train_loss: {train_loss}')
     print(f'valid_loss: {valid_loss}')
 
+
+
 tensorboard_writer.close()
+
 # %%

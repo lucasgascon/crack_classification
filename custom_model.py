@@ -107,9 +107,6 @@ class Net16(nn.Module):
 def load_net_vgg16():
     model = Net16()
 
-    init_name = 'saved_models/init_model.pt'
-    torch.save(model.state_dict(), init_name)
-
     pretrained_dict = torch.load('models/model_unet_vgg_16_best.pt', map_location=torch.device('cpu'))['model']
 
     model_dict = model.state_dict()
@@ -123,13 +120,11 @@ def load_net_vgg16():
     # model.load_state_dict(pretrained_dict)
     model.load_state_dict(model_dict)
 
-    load_name = 'saved_models/load_model.pt'
-    torch.save(model.state_dict(), load_name)
 
     # Freeze first layers
-    model.conv1.requires_grad_(False)
-    model.conv2.requires_grad_(False)
-    model.conv3.requires_grad_(False)
+    model.conv1.requires_grad_(True)
+    model.conv2.requires_grad_(True)
+    model.conv3.requires_grad_(True)
     model.conv4.requires_grad_(True)
     model.conv5.requires_grad_(True)
 
