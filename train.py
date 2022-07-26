@@ -14,7 +14,7 @@ from tqdm import tqdm
 from torch import nn
 
 from custom_model import CustomModel, load_net_vgg16, unfreeze, CrackClassifier
-from logs import plot_classification_report
+from logs import plot_classification_report, plot_classes_preds
 
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
@@ -113,7 +113,6 @@ valid_dataloader = DataLoader(
     sampler = valid_sampler, 
     num_workers=NUM_WORKER,
 )
-
 
 # model = CustomModel().to(device)
 # model = CrackClassifier(device).to(device)
@@ -223,6 +222,14 @@ for epoch in range(NB_EPOCHS):
 
         target = target.data.cpu().numpy()
         y_valid_true.extend(target)  # save ground truth
+
+
+        # if (i<1) and (epoch == NB_EPOCHS-1):
+        if (i<1) and (epoch == 0):
+            figure = plot_classes_preds(input, target, output,
+                                        shown_batch_size=int(32))
+            
+            tensorboard_writer.add_figure('Classes preds', figure, epoch)
 
         epoch_valid_losses.append(loss.detach().cpu())
 

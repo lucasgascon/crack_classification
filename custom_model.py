@@ -14,7 +14,8 @@ class CustomModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.backbone = timm.create_model(
-            'resnet50',
+            # 'resnet50',
+            'efficientnet_b0',
             pretrained=True,
             )
 

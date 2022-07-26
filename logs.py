@@ -2,6 +2,7 @@ from sklearn.metrics import precision_recall_fscore_support
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import torch
 
 def plot_classification_report(y_tru, y_prd, figsize=(10, 10), ax=None):
 
@@ -24,3 +25,56 @@ def plot_classification_report(y_tru, y_prd, figsize=(10, 10), ax=None):
                 ax=ax)
 
     return heatmap
+
+
+
+def plot_classes_preds(images: list, labels: list,
+                       preds: list,
+                       shown_batch_size: int = 4) -> plt.figure:
+    """
+    Plots a batch processed by a computer vision model as a matplotlib figure
+    Parameters
+    ----------
+    images : list
+        list of torch.tensor of the images to plot
+    labels : list
+        list of int of the labels associated with each image
+    probas : list
+        list of float of the probabilities scoring for each image
+    preds : list
+        list of int of the prediction for each image
+    names : list
+        list of string of the name each image
+    shown_batch_size : int, optional
+        number of images to be shown within the batch
+        (must for <= to batch size), by default 4
+    Returns
+    -------
+    plt.figure
+        matplotlib figure with the images, the associated edges and metadata
+    """ 
+    # plot the images in the batch, along with predicted and true labels
+    n_img_per_line = 1
+    n_lines = shown_batch_size / n_img_per_line
+    fig = plt.figure(figsize=(24, 12 * n_lines))
+    axes = []
+    for idx in np.arange(shown_batch_size):
+        axes.append(fig.add_subplot(n_lines, n_img_per_line*2,
+                                    (2*idx)+1, xticks=[], yticks=[],
+                                    label=f'color_{idx}')) 
+        # color_img = torch.transpose(images[idx][:3], 0, 2).numpy()
+        color_img = images.numpy()
+        axes[-1].imshow(color_img) 
+        axes[-1].set_title(
+            "{0},\n {1}, {2:.1f}%\n(label: {3})".format(
+                preds[idx],
+                labels[idx]),
+            color=("green" if preds[idx] == labels[idx].item() else "red"),
+            fontdict={'fontsize': 60}) 
+        axes.append(fig.add_subplot(n_lines, n_img_per_line*2,
+                                    (2*idx)+2, xticks=[], yticks=[],
+                                    label=f'edges_{idx}'))
+        edges_img = torch.transpose(images[idx][3], 0, 1).numpy()
+        axes[-1].imshow(edges_img)
+    plt.tight_layout()
+    return fig
