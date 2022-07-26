@@ -55,7 +55,7 @@ def plot_classes_preds(images: list, labels: list,
     """ 
     # plot the images in the batch, along with predicted and true labels
     n_img_per_line = 1
-    n_lines = shown_batch_size / n_img_per_line
+    n_lines = shown_batch_size // n_img_per_line
     fig = plt.figure(figsize=(24, 12 * n_lines))
     axes = []
     for idx in np.arange(shown_batch_size):
@@ -63,18 +63,16 @@ def plot_classes_preds(images: list, labels: list,
                                     (2*idx)+1, xticks=[], yticks=[],
                                     label=f'color_{idx}')) 
         # color_img = torch.transpose(images[idx][:3], 0, 2).numpy()
-        color_img = images.numpy()
+        color_img = torch.transpose(images[idx],0,2).detach().cpu().numpy()
         axes[-1].imshow(color_img) 
         axes[-1].set_title(
-            "{0},\n {1}, {2:.1f}%\n(label: {3})".format(
+            "(pred: {0}) %\n(label: {1})".format(
                 preds[idx],
                 labels[idx]),
             color=("green" if preds[idx] == labels[idx].item() else "red"),
-            fontdict={'fontsize': 60}) 
+            fontdict={'fontsize': 30}) 
         axes.append(fig.add_subplot(n_lines, n_img_per_line*2,
                                     (2*idx)+2, xticks=[], yticks=[],
                                     label=f'edges_{idx}'))
-        edges_img = torch.transpose(images[idx][3], 0, 1).numpy()
-        axes[-1].imshow(edges_img)
     plt.tight_layout()
     return fig

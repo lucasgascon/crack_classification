@@ -226,9 +226,8 @@ for epoch in range(NB_EPOCHS):
 
         # if (i<1) and (epoch == NB_EPOCHS-1):
         if (i<1) and (epoch == 0):
-            figure = plot_classes_preds(input, target, output,
+            figure = plot_classes_preds(input, target, output_,
                                         shown_batch_size=int(32))
-            
             tensorboard_writer.add_figure('Classes preds', figure, epoch)
 
         epoch_valid_losses.append(loss.detach().cpu())
