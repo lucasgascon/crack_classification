@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import torch
+from torchvision import transforms
+
 
 def plot_classification_report(y_tru, y_prd, figsize=(10, 10), ax=None):
 
@@ -53,26 +55,25 @@ def plot_classes_preds(images: list, labels: list,
     plt.figure
         matplotlib figure with the images, the associated edges and metadata
     """ 
+    n_inv = transforms.Normalize([-0.485/0.229, -0.546/0.224, -0.406/0.225], [1/0.229, 1/0.224, 1/0.225])
+
     # plot the images in the batch, along with predicted and true labels
-    n_img_per_line = 1
+    n_img_per_line = 6
     n_lines = shown_batch_size // n_img_per_line
-    fig = plt.figure(figsize=(24, 12 * n_lines))
+    fig = plt.figure(figsize=(12 * n_img_per_line, 12 * n_lines))
     axes = []
     for idx in np.arange(shown_batch_size):
-        axes.append(fig.add_subplot(n_lines, n_img_per_line*2,
-                                    (2*idx)+1, xticks=[], yticks=[],
+        axes.append(fig.add_subplot(n_lines, n_img_per_line,
+                                    idx, xticks=[], yticks=[],
                                     label=f'color_{idx}')) 
-        # color_img = torch.transpose(images[idx][:3], 0, 2).numpy()
-        color_img = torch.transpose(images[idx],0,2).detach().cpu().numpy()
-        axes[-1].imshow(color_img) 
+        image = n_inv (images[idx])
+        color_img = torch.transpose(image,0,2).detach().cpu().numpy()
+        axes[-1].imshow(color_img.astype('uint8'))
         axes[-1].set_title(
-            "(pred: {0}) %\n(label: {1})".format(
-                preds[idx],
+            "(pred: {0}) \n(label: {1})".format(
+                int(preds[idx]),
                 labels[idx]),
             color=("green" if preds[idx] == labels[idx].item() else "red"),
             fontdict={'fontsize': 30}) 
-        axes.append(fig.add_subplot(n_lines, n_img_per_line*2,
-                                    (2*idx)+2, xticks=[], yticks=[],
-                                    label=f'edges_{idx}'))
     plt.tight_layout()
     return fig

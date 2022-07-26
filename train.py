@@ -36,7 +36,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 30
+NB_EPOCHS = 50
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+
@@ -48,9 +48,6 @@ if(torch.backends.mps.is_available() & torch.backends.mps.is_built()):
 else:
     device = torch.device("cpu")
 print('device : ', device)
-
-#device = torch.device('cpu')
-
 #%%
 
 now = datetime.datetime.now()
@@ -114,9 +111,9 @@ valid_dataloader = DataLoader(
     num_workers=NUM_WORKER,
 )
 
-# model = CustomModel().to(device)
+model = CustomModel().to(device)
 # model = CrackClassifier(device).to(device)
-model = load_net_vgg16().to(device)
+# model = load_net_vgg16().to(device)
 
 
 optimizer = torch.optim.Adam(
@@ -124,7 +121,7 @@ optimizer = torch.optim.Adam(
     lr = 0.005,
     betas = (0.9,0.999),
     eps = 1e-08,
-    # weight_decay = 1e-3,
+    weight_decay = 1e-3,
     amsgrad = False,
 )
 
@@ -173,6 +170,7 @@ for epoch in range(NB_EPOCHS):
         output = model(input)
 
         output_ = (output.detach().cpu().numpy() > 0)
+
         y_train_pred.extend(output_)  # save prediction
 
         loss_per_sample = criterion(output.view(-1), target.float())
@@ -224,10 +222,10 @@ for epoch in range(NB_EPOCHS):
         y_valid_true.extend(target)  # save ground truth
 
 
-        # if (i<1) and (epoch == NB_EPOCHS-1):
-        if (i<1) and (epoch == 0):
+        if (i<1) and (epoch == NB_EPOCHS-1):
+        # if (i<1) and (epoch == 0):
             figure = plot_classes_preds(input, target, output_,
-                                        shown_batch_size=int(32))
+                                        shown_batch_size=30)
             tensorboard_writer.add_figure('Classes preds', figure, epoch)
 
         epoch_valid_losses.append(loss.detach().cpu())
