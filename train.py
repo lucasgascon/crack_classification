@@ -121,7 +121,7 @@ optimizer = torch.optim.Adam(
     lr = 0.005,
     betas = (0.9,0.999),
     eps = 1e-08,
-    weight_decay = 1e-3,
+    # weight_decay = 1e-3,
     amsgrad = False,
 )
 
@@ -171,6 +171,12 @@ for epoch in range(NB_EPOCHS):
 
         output_ = (output.detach().cpu().numpy() > 0)
 
+        # if (i<1) and (epoch == 0):
+        #     figure = plot_classes_preds(input, target, output_,
+        #                                 shown_batch_size=30)
+        #     tensorboard_writer.add_figure('Classes preds', figure, epoch)
+        # tensorboard_writer.close()
+
         y_train_pred.extend(output_)  # save prediction
 
         loss_per_sample = criterion(output.view(-1), target.float())
@@ -187,12 +193,12 @@ for epoch in range(NB_EPOCHS):
 
         stop = time.time()
 
-    # torch.save({
-    #         'epoch': epoch,
-    #         'model_state_dict': model.state_dict(),
-    #         'optimizer_state_dict': optimizer.state_dict(),
-    #         'loss': loss,
-    #         }, tmp_name)
+    torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss.detach().cpu().numpy(),
+            }, tmp_name)
 
 
     model.eval()
@@ -222,21 +228,21 @@ for epoch in range(NB_EPOCHS):
         y_valid_true.extend(target)  # save ground truth
 
 
-        if (i<1) and (epoch == NB_EPOCHS-1):
-        # if (i<1) and (epoch == 0):
-            figure = plot_classes_preds(input, target, output_,
-                                        shown_batch_size=30)
-            tensorboard_writer.add_figure('Classes preds', figure, epoch)
+        # if (i<1) and (epoch == NB_EPOCHS-1):
+        # # if (i<1) and (epoch == 0):
+        #     figure = plot_classes_preds(input, target, output_,
+        #                                 shown_batch_size=30)
+        #     tensorboard_writer.add_figure('Classes preds', figure, epoch)
 
         epoch_valid_losses.append(loss.detach().cpu())
 
         stop = time.time()
 
-    accuracy = accuracy_score(y_valid_true, y_valid_pred)
-    if accuracy > best_accuracy :
-        print('Saved epoch ' + str(epoch) + ' whose accuracy is ' + str(accuracy))
-        best_accuracy = accuracy 
-        torch.save(model, tmp_name)
+    # accuracy = accuracy_score(y_valid_true, y_valid_pred)
+    # if accuracy > best_accuracy :
+    #     print('Saved epoch ' + str(epoch) + ' whose accuracy is ' + str(accuracy))
+    #     best_accuracy = accuracy 
+    #     torch.save(model, tmp_name)
 
 
     train_loss = sum(epoch_train_losses) / len(epoch_train_losses)

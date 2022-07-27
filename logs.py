@@ -55,20 +55,31 @@ def plot_classes_preds(images: list, labels: list,
     plt.figure
         matplotlib figure with the images, the associated edges and metadata
     """ 
-    n_inv = transforms.Normalize([-0.485/0.229, -0.546/0.224, -0.406/0.225], [1/0.229, 1/0.224, 1/0.225])
-
+    
     # plot the images in the batch, along with predicted and true labels
+
     n_img_per_line = 6
     n_lines = shown_batch_size // n_img_per_line
     fig = plt.figure(figsize=(12 * n_img_per_line, 12 * n_lines))
     axes = []
     for idx in np.arange(shown_batch_size):
         axes.append(fig.add_subplot(n_lines, n_img_per_line,
-                                    idx, xticks=[], yticks=[],
+                                    idx+1, xticks=[], yticks=[],
                                     label=f'color_{idx}')) 
-        image = n_inv (images[idx])
-        color_img = torch.transpose(image,0,2).detach().cpu().numpy()
-        axes[-1].imshow(color_img.astype('uint8'))
+        image = images[idx].detach().clone()
+      
+        img_permute = torch.permute(image, (1,2,0))
+        img = img_permute.cpu().numpy()
+        # img_np[0] = (img_np[0]-img_np[0].min())/img_np[0].max()
+        # img_np[1] = (img_np[1]-img_np[1].min())/img_np[1].max()
+        # img_np[2] = (img_np[2]-img_np[2].min())/img_np[2].max()
+        norm = (img - np.min(img)) / (np.max(img) - np.min(img))
+        #axes[-1].imshow(((img_np-img_np.min())/img_np.max() * 255).astype('uint8'))
+        axes[-1].imshow((norm * 255).astype('uint8'))
+        plt.figure()
+        img_np = img
+        plt.imshow(((img_np-img_np.min())/img_np.max() * 255).astype('uint8'))
+        plt.show()
         axes[-1].set_title(
             "(pred: {0}) \n(label: {1})".format(
                 int(preds[idx]),
