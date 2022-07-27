@@ -111,9 +111,9 @@ valid_dataloader = DataLoader(
     num_workers=NUM_WORKER,
 )
 
-model = CustomModel().to(device)
+# model = CustomModel().to(device)
 # model = CrackClassifier(device).to(device)
-# model = load_net_vgg16().to(device)
+model = load_net_vgg16().to(device)
 
 
 optimizer = torch.optim.Adam(
@@ -171,12 +171,6 @@ for epoch in range(NB_EPOCHS):
 
         output_ = (output.detach().cpu().numpy() > 0)
 
-        # if (i<1) and (epoch == 0):
-        #     figure = plot_classes_preds(input, target, output_,
-        #                                 shown_batch_size=30)
-        #     tensorboard_writer.add_figure('Classes preds', figure, epoch)
-        # tensorboard_writer.close()
-
         y_train_pred.extend(output_)  # save prediction
 
         loss_per_sample = criterion(output.view(-1), target.float())
@@ -193,12 +187,12 @@ for epoch in range(NB_EPOCHS):
 
         stop = time.time()
 
-    torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': loss.detach().cpu().numpy(),
-            }, tmp_name)
+    # torch.save({
+    #         'epoch': epoch,
+    #         'model_state_dict': model.state_dict(),
+    #         'optimizer_state_dict': optimizer.state_dict(),
+    #         'loss': loss.detach().cpu().numpy(),
+    #         }, tmp_name)
 
 
     model.eval()
@@ -227,12 +221,10 @@ for epoch in range(NB_EPOCHS):
         target = target.data.cpu().numpy()
         y_valid_true.extend(target)  # save ground truth
 
-
-        # if (i<1) and (epoch == NB_EPOCHS-1):
-        # # if (i<1) and (epoch == 0):
-        #     figure = plot_classes_preds(input, target, output_,
-        #                                 shown_batch_size=30)
-        #     tensorboard_writer.add_figure('Classes preds', figure, epoch)
+        if (i in [1,10,20]) and (epoch in [1,15,20,25,30]):
+            figure = plot_classes_preds(input, target, output_,
+                                        shown_batch_size=30)
+            tensorboard_writer.add_figure('Classes preds' + str(i), figure, epoch)
 
         epoch_valid_losses.append(loss.detach().cpu())
 
@@ -288,5 +280,4 @@ for epoch in range(NB_EPOCHS):
 
 
 tensorboard_writer.close()
-
 # %%

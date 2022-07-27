@@ -60,26 +60,22 @@ def plot_classes_preds(images: list, labels: list,
 
     n_img_per_line = 6
     n_lines = shown_batch_size // n_img_per_line
-    fig = plt.figure(figsize=(12 * n_img_per_line, 12 * n_lines))
+    fig = plt.figure(figsize=(18 * n_img_per_line, 18 * n_lines))
     axes = []
     for idx in np.arange(shown_batch_size):
         axes.append(fig.add_subplot(n_lines, n_img_per_line,
                                     idx+1, xticks=[], yticks=[],
                                     label=f'color_{idx}')) 
         image = images[idx].detach().clone()
-      
+
+        # norm = (img - np.min(img)) / (np.max(img) - np.min(img))
+
+        image[0] = (image[0]-image[0].min())/(image[0].max() - image[0].min())
+        image[1] = (image[1]-image[1].min())/(image[1].max() - image[1].min())
+        image[2] = (image[2]-image[2].min())/(image[2].max() - image[2].min())
         img_permute = torch.permute(image, (1,2,0))
-        img = img_permute.cpu().numpy()
-        # img_np[0] = (img_np[0]-img_np[0].min())/img_np[0].max()
-        # img_np[1] = (img_np[1]-img_np[1].min())/img_np[1].max()
-        # img_np[2] = (img_np[2]-img_np[2].min())/img_np[2].max()
-        norm = (img - np.min(img)) / (np.max(img) - np.min(img))
-        #axes[-1].imshow(((img_np-img_np.min())/img_np.max() * 255).astype('uint8'))
-        axes[-1].imshow((norm * 255).astype('uint8'))
-        plt.figure()
-        img_np = img
-        plt.imshow(((img_np-img_np.min())/img_np.max() * 255).astype('uint8'))
-        plt.show()
+        img_np = img_permute.cpu().numpy()
+        axes[-1].imshow((img_np * 255).astype('uint8'))
         axes[-1].set_title(
             "(pred: {0}) \n(label: {1})".format(
                 int(preds[idx]),
