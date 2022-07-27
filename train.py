@@ -111,9 +111,9 @@ valid_dataloader = DataLoader(
     num_workers=NUM_WORKER,
 )
 
-model = CustomModel().to(device)
+# model = CustomModel().to(device)
 # model = CrackClassifier(device).to(device)
-# model = load_net_vgg16().to(device)
+model = load_net_vgg16().to(device)
 
 
 optimizer = torch.optim.Adam(
@@ -146,7 +146,7 @@ for epoch in range(NB_EPOCHS):
 
     # model = unfreeze(model, epoch)
 
-    model.train()
+    # model.train()
 
     y_train_pred = []
     y_train_true = []
