@@ -36,7 +36,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 30
+NB_EPOCHS = 100
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+
@@ -111,9 +111,9 @@ valid_dataloader = DataLoader(
     num_workers=NUM_WORKER,
 )
 
-# model = CustomModel().to(device)
+model = CustomModel().to(device)
 # model = CrackClassifier(device).to(device)
-model = load_net_vgg16().to(device)
+# model = load_net_vgg16().to(device)
 
 
 optimizer = torch.optim.Adam(
@@ -222,7 +222,7 @@ for epoch in range(NB_EPOCHS):
         y_valid_true.extend(target)  # save ground truth
 
         # # Plot images with labels and predictions
-        # if (i in [1,3,4,8]) and (epoch in [40,50,60,70,80,90]):
+        # if (i in [1,3,4,5]) and (epoch in [40,50,60,70,80,90]):
         #     figure = plot_classes_preds(input, target, output_,
         #                                 shown_batch_size=30)
         #     tensorboard_writer.add_figure('Classes preds' + str(i), figure, epoch)
