@@ -26,6 +26,8 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+
 import seaborn as sns
 
 import numpy as np
@@ -118,12 +120,14 @@ model = load_net_vgg16().to(device)
 
 optimizer = torch.optim.Adam(
     model.parameters(),
-    lr = 0.005,
+    lr = 0.05,
     betas = (0.9,0.999),
     eps = 1e-08,
     # weight_decay = 1e-3,
     amsgrad = False,
 )
+
+scheduler = ReduceLROnPlateau(optimizer, 'min')
 
 
 pos_weight = torch.Tensor([train_class_weights[0] / train_class_weights[1]]).to(device)
@@ -146,7 +150,7 @@ for epoch in range(NB_EPOCHS):
 
     # model = unfreeze(model, epoch)
 
-    # model.train()
+    model.train()
 
     y_train_pred = []
     y_train_true = []
@@ -181,7 +185,10 @@ for epoch in range(NB_EPOCHS):
 
         optimizer.zero_grad()
         loss.backward()
-        optimizer.step()
+
+        #optimizer.step()
+        scheduler.step(loss)
+        
 
         epoch_train_losses.append(loss.detach().to('cpu'))
 
