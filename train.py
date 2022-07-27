@@ -250,6 +250,17 @@ for epoch in range(NB_EPOCHS):
         valid_loss,
         epoch)
 
+    tensorboard_writer.add_scalar(
+        'Training epoch acc_score',
+        accuracy_score(y_train_true,y_train_pred),
+        epoch)
+
+    tensorboard_writer.add_scalar(
+        'Valid epoch acc_score',
+        accuracy_score(y_valid_true,y_valid_pred),
+        epoch)
+
+
     # Build train confusion matrix
     cf_matrix = confusion_matrix(y_train_true, y_train_pred)
     df_cm = pd.DataFrame(cf_matrix, index=[i for i in classes],
