@@ -36,7 +36,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 50
+NB_EPOCHS = 100
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+
@@ -187,12 +187,12 @@ for epoch in range(NB_EPOCHS):
 
         stop = time.time()
 
-    # torch.save({
-    #         'epoch': epoch,
-    #         'model_state_dict': model.state_dict(),
-    #         'optimizer_state_dict': optimizer.state_dict(),
-    #         'loss': loss.detach().cpu().numpy(),
-    #         }, tmp_name)
+    torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss.detach().cpu().numpy(),
+            }, tmp_name)
 
 
     model.eval()
@@ -221,7 +221,7 @@ for epoch in range(NB_EPOCHS):
         target = target.data.cpu().numpy()
         y_valid_true.extend(target)  # save ground truth
 
-        if (i in [1,10,20]) and (epoch in [1,15,20,25,30]):
+        if (i in [1,3,4,8]) and (epoch in [40,50,60,70,80,90]):
             figure = plot_classes_preds(input, target, output_,
                                         shown_batch_size=30)
             tensorboard_writer.add_figure('Classes preds' + str(i), figure, epoch)

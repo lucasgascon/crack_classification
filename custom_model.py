@@ -138,25 +138,22 @@ summary(model, (3,250,300))
 
 
 def unfreeze(model, epoch) : 
-    NB_EPOCH = 30
 
-    k= NB_EPOCH//4
-
-    if epoch == 0*k : 
+    if epoch == 0 : 
         model.conv1.requires_grad_(False)
         model.conv2.requires_grad_(False)
         model.conv3.requires_grad_(False)
         model.conv4.requires_grad_(False)
         model.conv5.requires_grad_(False)
 
-    if epoch == 1*k : 
+    if epoch == 25 : 
         model.conv1.requires_grad_(False)
         model.conv2.requires_grad_(False)
         model.conv3.requires_grad_(False)
         model.conv4.requires_grad_(False)
         model.conv5.requires_grad_(True)
 
-    if epoch == 2*k : 
+    if epoch == 30 : 
         model.conv1.requires_grad_(False)
         model.conv2.requires_grad_(False)
         model.conv3.requires_grad_(False)
@@ -164,14 +161,14 @@ def unfreeze(model, epoch) :
         model.conv5.requires_grad_(True)
 
     
-    if epoch == 3*k : 
+    if epoch == 35 : 
         model.conv1.requires_grad_(False)
         model.conv2.requires_grad_(False)
         model.conv3.requires_grad_(True)
         model.conv4.requires_grad_(True)
         model.conv5.requires_grad_(True)
 
-    if epoch == 4*k : 
+    if epoch == 40 : 
         model.conv1.requires_grad_(True)
         model.conv2.requires_grad_(True)
         model.conv3.requires_grad_(True)
