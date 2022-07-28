@@ -38,7 +38,7 @@ random.seed(24785)
 torch.manual_seed(24785)
 
 BATCH_SIZE = 32
-NB_EPOCHS = 100
+NB_EPOCHS = 50
 NUM_WORKER = 0
 
 # this ensures that the current MacOS version is at least 12.3+
@@ -185,8 +185,8 @@ for epoch in range(NB_EPOCHS):
         optimizer.zero_grad()
         loss.backward()
 
-        #optimizer.step()
-        scheduler.step(loss)
+        optimizer.step()
+        # scheduler.step(loss)
         
 
         epoch_train_losses.append(loss.detach().to('cpu'))
