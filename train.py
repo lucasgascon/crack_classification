@@ -113,9 +113,8 @@ valid_dataloader = DataLoader(
     num_workers=NUM_WORKER,
 )
 
-model = CustomModel().to(device)
-# model = CrackClassifier(device).to(device)
-# model = load_net_vgg16().to(device)
+# model = CustomModel().to(device)
+model = load_net_vgg16().to(device)
 
 
 optimizer = torch.optim.Adam(
