@@ -114,7 +114,6 @@ valid_dataloader = DataLoader(
 )
 
 # model = CustomModel().to(device)
-# model = CrackClassifier(device).to(device)
 model = load_net_vgg16().to(device)
 
 
