@@ -26,23 +26,6 @@ class CustomModel(nn.Module):
         pred = self.linear(hidden)
         return pred
 
-class CrackClassifier(nn.Module):
-    def __init__(self, device):
-        super(CrackClassifier,self).__init__()
-        self.resnet = timm.create_model(
-            'resnet50',
-            pretrained=True)
-        self.resnet_fc = nn.Sequential(
-               nn.Linear(1000, 128),
-               nn.ReLU(inplace=True),
-               nn.Linear(128, 1),
-               nn.LogSoftmax(dim=1)).to(device)
-
-    def forward(self,x):
-        x = self.resnet(x)
-        x = self.resnet_fc(x)
-        return x
-
 class Net16(nn.Module):
     def __init__(self):
         super().__init__()
@@ -84,8 +67,6 @@ class Net16(nn.Module):
                                    self.encoder[28],
                                    self.relu)
         
-        # self.batchnorm = nn.BatchNorm2d(512)
-        # self.dropout = nn.Dropout(p=.1)
         self.flat = nn.Flatten()
 
         self.fc = nn.Linear(138240,1)
@@ -97,8 +78,6 @@ class Net16(nn.Module):
         conv4 = self.conv4(self.pool(conv3))
         conv5 = self.conv5(self.pool(conv4))
 
-        # x = self.batchnorm(conv5)
-        # x = self.dropout(x)
         x = self.flat(conv5)
         x = self.fc(x)
 
@@ -118,7 +97,6 @@ def load_net_vgg16():
     model_dict.update(pretrained_dict) 
 
     # 3. load the new state dict
-    # model.load_state_dict(pretrained_dict)
     model.load_state_dict(model_dict)
 
 
@@ -131,10 +109,6 @@ def load_net_vgg16():
 
 
     return model
-
-
-model = load_net_vgg16()
-summary(model, (3,250,300))
 
 
 def unfreeze(model, epoch) : 
