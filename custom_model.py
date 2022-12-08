@@ -26,7 +26,7 @@ class CustomModel(nn.Module):
         pred = self.linear(hidden)
         return pred
 
-class Net16(nn.Module):
+class UNet16(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -85,7 +85,7 @@ class Net16(nn.Module):
 
 
 def load_net_vgg16():
-    model = Net16()
+    model = UNet16()
 
     pretrained_dict = torch.load('models/model_unet_vgg_16_best.pt', map_location=torch.device('cpu'))['model']
 
