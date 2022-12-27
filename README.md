@@ -8,7 +8,7 @@ Just clone the repo, possibly add frames annotated in data folder.
 
 # Minimal operation
 
-In the file train.py (line 108), select the model that we want to run.  
+In the file train.py (line 108), select the model that you want to run.  
 Execute train.py 
 
 # Description
